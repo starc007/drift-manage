@@ -9,6 +9,9 @@ import { createAppKit } from "@reown/appkit/react";
 import { SolanaAdapter } from "@reown/appkit-adapter-solana/react";
 import { solana, solanaTestnet, solanaDevnet } from "@reown/appkit/networks";
 import { walletMetadata, PROJECT_ID } from "@/utils/walletConfig";
+import Navbar from "./Navbar";
+import { Toaster } from "sonner";
+
 const solanaWeb3JsAdapter = new SolanaAdapter({
   wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
 });
@@ -25,7 +28,13 @@ createAppKit({
 });
 
 const WalletProvider = ({ children }: { children: React.ReactNode }) => {
-  return <>{children}</>;
+  return (
+    <main className="container mx-auto">
+      <Toaster />
+      <Navbar />
+      {children}
+    </main>
+  );
 };
 
 export default WalletProvider;
