@@ -3,7 +3,7 @@ import { ButtonProps, ButtonSize, ButtonVariant, Ref } from "./button.types";
 import clsx from "clsx";
 
 const colorMap = {
-  primary: "bg-primary text-white",
+  primary: "bg-primary text-background",
   danger: "bg-red-500 text-white",
   link: "text-primary",
   secondary: "bg-primary/10 text-primary",

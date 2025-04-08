@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
-@theme inline {
-  --color-background: #fff;
-  --color-primary: #000;
-  --font-sans: var(--font-geist-sans);
+@theme {
+  --color-background: #000;
+  --color-primary: #fff;
+  --font-geist: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -21,5 +21,5 @@
 body {
   background: var(--color-background);
   color: var(--color-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-geist-sans);
 }

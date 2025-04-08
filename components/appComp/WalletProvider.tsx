@@ -29,7 +29,7 @@ createAppKit({
 
 const WalletProvider = ({ children }: { children: React.ReactNode }) => {
   return (
-    <main className="container mx-auto">
+    <main className="max-w-5xl mx-auto px-4">
       <Toaster />
       <Navbar />
       {children}

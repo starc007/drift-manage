@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppStore } from "@/store";
 import {
   BulkAccountLoader,
   DriftClient,
@@ -12,10 +13,9 @@ import {
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 
 class DriftService {
-  public driftClient: DriftClient | null = null;
   private CLUSTER: DriftEnv = "mainnet-beta";
 
-  initialize(connection: Connection, walletPubKey?: string): boolean {
+  initialize(connection: Connection, walletPubKey?: string): DriftClient {
     const dummyWallet = this.createThrowawayIWallet(
       walletPubKey ? new PublicKey(walletPubKey) : undefined
     );
@@ -39,12 +39,8 @@ class DriftService {
       },
     };
 
-    this.driftClient = new DriftClient(driftClientConfig);
-    return true;
-  }
-
-  isInitialized() {
-    return this.driftClient !== null;
+    const driftClient = new DriftClient(driftClientConfig);
+    return driftClient;
   }
 
   createThrowawayIWallet(walletPubKey?: PublicKey) {
@@ -68,19 +64,6 @@ class DriftService {
     };
 
     return newWallet;
-  }
-
-  async getUserAccounts(address: string) {
-    if (!this.driftClient) {
-      throw new Error("Drift client not initialized");
-    }
-    const publicKey = new PublicKey(address);
-    try {
-      return this.driftClient.getUserAccountsForAuthority(publicKey);
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
   }
 }
 
