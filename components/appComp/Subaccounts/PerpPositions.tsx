@@ -2,6 +2,7 @@ import {
   PerpPosition,
   BASE_PRECISION_EXP,
   QUOTE_PRECISION_EXP,
+  MainnetPerpMarkets,
 } from "@drift-labs/sdk";
 import { BN } from "@drift-labs/sdk";
 
@@ -9,14 +10,25 @@ interface PerpPositionsProps {
   positions: PerpPosition[];
 }
 
-const formatBaseSize = (baseSize: BN): string => {
+const formatBaseSize = (baseSize: BN, marketIndex: number): string => {
   const value = Number(baseSize.toString()) / Math.pow(10, BASE_PRECISION_EXP);
-  return value.toFixed(3);
+  const market = MainnetPerpMarkets[marketIndex];
+  const symbol = market?.baseAssetSymbol || `PERP-${marketIndex}`;
+  return `${value.toFixed(3)} ${symbol}`;
 };
 
-const formatPrice = (quoteAmount: BN, baseAmount: BN): string => {
-  if (baseAmount.isZero()) return "0.00";
-  const price = Number(quoteAmount.toString()) / Number(baseAmount.toString());
+const formatPrice = (position: PerpPosition): string => {
+  if (position.baseAssetAmount.isZero()) return "0.00";
+
+  // Convert to numbers with proper precision and use absolute values
+  const quoteEntry =
+    Number(position.quoteEntryAmount.abs().toString()) /
+    Math.pow(10, QUOTE_PRECISION_EXP);
+  const baseAmount =
+    Number(position.baseAssetAmount.abs().toString()) /
+    Math.pow(10, BASE_PRECISION_EXP);
+
+  const price = quoteEntry / baseAmount;
   return price.toFixed(2);
 };
 
@@ -44,21 +56,21 @@ export const PerpPositions = ({ positions }: PerpPositionsProps) => {
       {activePositions.map((position, index) => {
         const isLong = !position.baseAssetAmount.isNeg();
         const baseSize = position.baseAssetAmount.abs();
+        const market = MainnetPerpMarkets[position.marketIndex];
+        const marketName = market?.symbol || `PERP-${position.marketIndex}`;
 
-        // Calculate entry price: quoteEntryAmount / baseAssetAmount
-        const entryPrice = formatPrice(
-          position.quoteEntryAmount.abs(),
-          baseSize
+        // Calculate entry price using the position data
+        const entryPrice = formatPrice(position);
+
+        // Calculate unrealized PnL
+        const unrealizedPnl = position.quoteAssetAmount.sub(
+          position.quoteBreakEvenAmount
         );
-
-        const unrealizedPnl = position.settledPnl;
 
         return (
           <div key={index} className="bg-primary/5 rounded-xl p-4">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-primary/60">
-                Market #{position.marketIndex}
-              </span>
+              <span className="text-primary/60">{marketName}</span>
               <div
                 className={`px-3 py-1 rounded-full text-sm font-medium ${
                   isLong
@@ -73,7 +85,9 @@ export const PerpPositions = ({ positions }: PerpPositionsProps) => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <div className="text-sm text-primary/60 mb-1">Size</div>
-                <div className="font-semibold">{formatBaseSize(baseSize)}</div>
+                <div className="font-semibold">
+                  {formatBaseSize(baseSize, position.marketIndex)}
+                </div>
               </div>
               <div>
                 <div className="text-sm text-primary/60 mb-1">Entry Price</div>

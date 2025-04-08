@@ -1,4 +1,3 @@
-import { MdAccountBalance } from "react-icons/md";
 import { formatBN } from "@/utils/format";
 import { StatCard } from "./StatCard";
 import { SubaccountCardProps } from "./types";
@@ -6,7 +5,6 @@ import { MarginMode } from "@drift-labs/sdk";
 import { PerpPositions } from "./PerpPositions";
 import { useState } from "react";
 import { calculateSubaccountValue, formatUSD } from "@/utils/calculations";
-import { BN } from "@drift-labs/sdk";
 
 export const SubaccountCard = ({ account }: SubaccountCardProps) => {
   const [showPositions, setShowPositions] = useState(false);

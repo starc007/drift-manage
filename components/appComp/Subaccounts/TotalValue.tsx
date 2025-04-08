@@ -1,11 +1,12 @@
-import { useAppStore } from "@/store";
 import { calculateSubaccountValue, formatUSD } from "@/utils/calculations";
-import { BN } from "@drift-labs/sdk";
+import { BN, UserAccount } from "@drift-labs/sdk";
 
-export const TotalValue = () => {
-  const { subAccounts } = useAppStore();
+interface Props {
+  accounts: UserAccount[];
+}
 
-  const totalValue = subAccounts.reduce((acc, account) => {
+export const TotalValue = ({ accounts }: Props) => {
+  const totalValue = accounts.reduce((acc, account) => {
     const accountValue = calculateSubaccountValue(
       account.spotPositions,
       account.perpPositions,
@@ -20,7 +21,7 @@ export const TotalValue = () => {
         <div>
           <h2 className="text-lg font-medium mb-1">Total Portfolio Value</h2>
           <p className="text-primary/60 text-sm">
-            Combined value across {subAccounts.length} subaccounts
+            Combined value across {accounts.length} subaccounts
           </p>
         </div>
         <div
@@ -34,7 +35,7 @@ export const TotalValue = () => {
 
       {/* Optional: Show breakdown by subaccount */}
       <div className="mt-4 space-y-2">
-        {subAccounts.map((account) => {
+        {accounts.map((account) => {
           const value = calculateSubaccountValue(
             account.spotPositions,
             account.perpPositions,

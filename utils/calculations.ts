@@ -23,12 +23,20 @@ export const calculateSubaccountValue = (
 
     // Calculate perp positions value
     const perpValue = perpPositions.reduce((acc, position) => {
-      // quoteAssetAmount represents the USD value of the position
-      return acc.add(position.settledPnl);
+      // For each position:
+      // 1. quoteAssetAmount: Current value of the position
+      // 2. quoteBreakEvenAmount: Cost basis of the position
+      // 3. settledPnl: Already settled PnL
+      const positionValue = position.quoteAssetAmount.sub(
+        position.quoteBreakEvenAmount
+      );
+      return acc.add(positionValue);
     }, new BN(0));
 
-    // Add settled PnL
-    const totalValue = usdcBalance.add(perpValue).add(settledPerpPnl);
+    // Total value = USDC balance + Perp positions value + Total settled PnL
+    const totalValue = usdcBalance
+      .add(perpValue)
+      .add(settledPerpPnl || new BN(0));
 
     return totalValue;
   } catch (error) {

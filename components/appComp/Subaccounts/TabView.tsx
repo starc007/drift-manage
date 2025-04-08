@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { WalletInput } from "../WalletInput";
-import { SubaccountsList } from "./SubaccountsList";
+import { SubaccountsList } from "./index";
 import useWalletConnect from "@/hooks/useWalletConnect";
+import { NotConnectedState } from "./NotConnectedState";
 
 type Tab = "my-accounts" | "other-wallet";
 
@@ -23,7 +24,7 @@ export const TabView = () => {
           onClick={() => setActiveTab("my-accounts")}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             activeTab === "my-accounts"
-              ? "bg-blue-500 text-white"
+              ? "bg-primary text-background"
               : "text-primary/60 hover:text-primary"
           }`}
         >
@@ -33,7 +34,7 @@ export const TabView = () => {
           onClick={() => setActiveTab("other-wallet")}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             activeTab === "other-wallet"
-              ? "bg-blue-500 text-white"
+              ? "bg-primary text-background"
               : "text-primary/60 hover:text-primary"
           }`}
         >
@@ -43,11 +44,11 @@ export const TabView = () => {
 
       {/* Tab Content */}
       {activeTab === "my-accounts" ? (
-        <SubaccountsList />
+        <SubaccountsList isWalletInput={false} />
       ) : (
         <div>
           <WalletInput />
-          <SubaccountsList isOtherWallet />
+          <SubaccountsList isWalletInput={true} />
         </div>
       )}
     </div>

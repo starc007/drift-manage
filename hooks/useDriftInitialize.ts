@@ -14,7 +14,12 @@ export const useDriftInitialize = (
 
   useEffect(() => {
     const initializeDrift = async () => {
-      if (!address || !connection || isInitializing || isInitialized) return;
+      if (!address || !connection) {
+        setIsInitialized(false);
+        return;
+      }
+
+      if (isInitializing || isInitialized) return;
 
       try {
         setIsInitializing(true);
@@ -28,6 +33,7 @@ export const useDriftInitialize = (
       } catch (error) {
         console.error("Failed to initialize Drift:", error);
         toast.error("Failed to initialize Drift service");
+        setIsInitialized(false);
       } finally {
         setIsInitializing(false);
       }

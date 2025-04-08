@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import { useAppStore } from "@/store";
+import { Button } from "@/components/UI";
 
 export const WalletInput = () => {
   const [address, setAddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const { getUserSubAccounts } = useAppStore();
+  const { getInputAddressAccounts } = useAppStore();
 
   const isValidPublicKey = (address: string) => {
     try {
@@ -35,7 +36,7 @@ export const WalletInput = () => {
 
     try {
       setIsLoading(true);
-      await getUserSubAccounts(address.trim());
+      await getInputAddressAccounts(address.trim());
     } catch (err) {
       setError("Failed to fetch wallet data");
       console.error(err);
@@ -45,36 +46,30 @@ export const WalletInput = () => {
   };
 
   return (
-    <div className="bg-primary/5 border border-primary/10 rounded-xl p-6 mb-6">
-      <h2 className="text-lg font-medium mb-2">View Other Wallet</h2>
-      <p className="text-primary/60 text-sm mb-4">
-        Enter a Solana wallet address to view their subaccounts
-      </p>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <div className="flex gap-3">
+    <div className="mb-8">
+      <div className="bg-primary/5 rounded-xl p-6">
+        <h2 className="text-xl font-medium mb-2">View Wallet Data</h2>
+        <p className="text-primary/60 mb-4">
+          Input a wallet address to view its subaccounts and positions
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4 flex gap-4">
+          <div className="flex-1">
             <input
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Enter Solana wallet address"
-              className="flex-1 bg-primary/5 border border-primary/10 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary/20"
+              className="w-full px-4 py-2 bg-primary/5 border border-primary/10 rounded-lg focus:outline-none focus:border-primary/20"
             />
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isLoading
-                  ? "bg-primary/20 text-primary/60"
-                  : "bg-blue-500 hover:bg-blue-600 text-white"
-              }`}
-            >
-              {isLoading ? "Loading..." : "View"}
-            </button>
+            {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
           </div>
-          {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
-        </div>
-      </form>
+
+          <Button type="submit" className="w-fit" disabled={isLoading}>
+            {isLoading ? "Loading..." : "View Wallet"}
+          </Button>
+        </form>
+      </div>
     </div>
   );
 };
