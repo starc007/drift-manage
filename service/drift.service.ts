@@ -12,28 +12,32 @@ import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 class DriftService {
   private CLUSTER: DriftEnv = "mainnet-beta";
 
-  initialize(connection: Connection, walletPubKey?: string): DriftClient {
+  initialize(
+    connection: Connection,
+    walletPubKey?: string,
+    wallet?: IWallet
+  ): DriftClient {
     const dummyWallet = this.createThrowawayIWallet(
       walletPubKey ? new PublicKey(walletPubKey) : undefined
     );
-    const accountLoader = new BulkAccountLoader(connection, "finalized", 0); // we don't want to poll for updates
+    // const accountLoader = new BulkAccountLoader(connection, "finalized", 0); // we don't want to poll for updates
 
-    const { oracleInfos, perpMarketIndexes, spotMarketIndexes } =
-      getMarketsAndOraclesForSubscription(this.CLUSTER);
+    // const { oracleInfos, perpMarketIndexes, spotMarketIndexes } =
+    //   getMarketsAndOraclesForSubscription(this.CLUSTER);
     const driftClientConfig: DriftClientConfig = {
       connection: connection,
-      wallet: dummyWallet,
+      wallet: wallet ? wallet : dummyWallet,
       programID: new PublicKey(DRIFT_PROGRAM_ID),
       env: this.CLUSTER,
       txVersion: 0,
-      userStats: false,
-      perpMarketIndexes: perpMarketIndexes,
-      spotMarketIndexes: spotMarketIndexes,
-      oracleInfos: oracleInfos,
-      accountSubscription: {
-        type: "polling",
-        accountLoader: accountLoader,
-      },
+      // userStats: false,
+      // perpMarketIndexes: perpMarketIndexes,
+      // spotMarketIndexes: spotMarketIndexes,
+      // oracleInfos: oracleInfos,
+      // accountSubscription: {
+      //   type: "polling",
+      //   accountLoader: accountLoader,
+      // },
     };
 
     const driftClient = new DriftClient(driftClientConfig);

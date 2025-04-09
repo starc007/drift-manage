@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Modal } from "@/components/UI";
 import { Button } from "@/components/UI";
 import { useAppStore } from "@/store";
+import { toast } from "sonner";
+import useWalletConnect from "@/hooks/useWalletConnect";
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -11,18 +13,52 @@ interface DepositModalProps {
 export const DepositModal = ({ isOpen, onClose }: DepositModalProps) => {
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { subAccounts, userAssets } = useAppStore();
+  const {
+    subAccounts,
+    userAssets,
+    driftClient,
+    getUserAssets,
+    getUserSubAccounts,
+  } = useAppStore();
   const [selectedSubaccount, setSelectedSubaccount] = useState(
     subAccounts[0]?.subAccountId || 0
   );
+  const { address } = useWalletConnect();
   const [selectedAsset, setSelectedAsset] = useState<IUserAsset | null>(
     userAssets.find((asset) => asset.symbol === "USDC") || null
   );
 
   const handleDeposit = async () => {
     try {
+      if (!driftClient) {
+        toast.error("Drift client not initialized");
+        return;
+      }
       setIsLoading(true);
-      // Deposit logic will be implemented here
+      const marketIndex = 0; // USDC
+      await driftClient.subscribe();
+      const precisionAmount = driftClient?.convertToSpotPrecision(
+        marketIndex,
+        Number(amount)
+      );
+      const associatedTokenAccount =
+        await driftClient?.getAssociatedTokenAccount(marketIndex);
+
+      if (!amount || !associatedTokenAccount) {
+        toast.error("Invalid amount or associated token account");
+        return;
+      }
+      await driftClient?.deposit(
+        precisionAmount,
+        marketIndex,
+        associatedTokenAccount,
+        selectedSubaccount
+      );
+      await Promise.all([
+        getUserAssets(address!),
+        getUserSubAccounts(address!),
+      ]);
+      toast.success("Deposit successful");
     } catch (error) {
       console.error("Deposit failed:", error);
     } finally {
@@ -32,6 +68,9 @@ export const DepositModal = ({ isOpen, onClose }: DepositModalProps) => {
 
   return (
     <Modal isOpen={isOpen} close={onClose} title="Deposit USDC" showCloseButton>
+      <p className="text-sm text-yellow-500 text-center mt-3">
+        ONLY DEPOSIT USDC TO THE SPOT MARKET
+      </p>
       <div className="space-y-6 mt-4">
         {/* Asset Selection */}
         <div>

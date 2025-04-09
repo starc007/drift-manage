@@ -3,6 +3,8 @@ import { driftService } from "@/service/drift.service";
 import { useAppStore } from "@/store";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { toast } from "sonner";
+import useWalletConnect from "./useWalletConnect";
+import { IWallet } from "@drift-labs/sdk";
 
 export const useDriftInitialize = (
   address: string | null,
@@ -11,6 +13,7 @@ export const useDriftInitialize = (
   const [isInitializing, setIsInitializing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const { getUserSubAccounts, setDriftClient, getUserAssets } = useAppStore();
+  const { walletProvider } = useWalletConnect();
 
   useEffect(() => {
     const initializeDrift = async () => {
@@ -23,7 +26,11 @@ export const useDriftInitialize = (
 
       try {
         setIsInitializing(true);
-        const client = driftService.initialize(connection, address);
+        const client = driftService.initialize(
+          connection,
+          address,
+          walletProvider as IWallet
+        );
 
         if (client) {
           setDriftClient(client);
