@@ -27,7 +27,6 @@ export const useDriftInitialize = (
       try {
         setIsInitializing(true);
         const client = driftService.initialize(
-          connection,
           address,
           walletProvider as IWallet
         );

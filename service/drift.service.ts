@@ -12,11 +12,7 @@ import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 class DriftService {
   private CLUSTER: DriftEnv = "mainnet-beta";
 
-  initialize(
-    connection: Connection,
-    walletPubKey?: string,
-    wallet?: IWallet
-  ): DriftClient {
+  initialize(walletPubKey?: string, wallet?: IWallet): DriftClient {
     const dummyWallet = this.createThrowawayIWallet(
       walletPubKey ? new PublicKey(walletPubKey) : undefined
     );
@@ -24,6 +20,10 @@ class DriftService {
 
     // const { oracleInfos, perpMarketIndexes, spotMarketIndexes } =
     //   getMarketsAndOraclesForSubscription(this.CLUSTER);
+    const connection = new Connection(
+      process.env.NEXT_PUBLIC_RPC_URL!,
+      "finalized"
+    );
     const driftClientConfig: DriftClientConfig = {
       connection: connection,
       wallet: wallet ? wallet : dummyWallet,

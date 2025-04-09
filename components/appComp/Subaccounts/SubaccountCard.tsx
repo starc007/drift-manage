@@ -16,7 +16,8 @@ export const SubaccountCard = ({ account }: SubaccountCardProps) => {
   const netValue = calculateSubaccountValue(
     account.spotPositions,
     account.perpPositions,
-    account.settledPerpPnl
+    account.settledPerpPnl,
+    account.totalDeposits
   );
 
   return (

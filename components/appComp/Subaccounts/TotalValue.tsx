@@ -3,18 +3,21 @@ import { BN, UserAccount } from "@drift-labs/sdk";
 import { Button } from "@/components/UI";
 import { useState } from "react";
 import { DepositModal } from "../DepositModal";
-
+import { WithdrawModal } from "../WithdrawModal";
 interface Props {
   accounts: UserAccount[];
 }
 
 export const TotalValue = ({ accounts }: Props) => {
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const totalValue = accounts.reduce((acc, account) => {
     const accountValue = calculateSubaccountValue(
       account.spotPositions,
       account.perpPositions,
-      account.settledPerpPnl
+      account.settledPerpPnl,
+      account.totalDeposits,
+      account.totalWithdraws
     );
     return acc.add(accountValue);
   }, new BN(0));
@@ -43,7 +46,10 @@ export const TotalValue = ({ accounts }: Props) => {
           <Button variant="primary" onClick={() => setIsDepositModalOpen(true)}>
             Deposit
           </Button>
-          <Button variant="secondary" onClick={() => {}}>
+          <Button
+            variant="secondary"
+            onClick={() => setIsWithdrawModalOpen(true)}
+          >
             Withdraw
           </Button>
         </div>
@@ -51,6 +57,10 @@ export const TotalValue = ({ accounts }: Props) => {
       <DepositModal
         isOpen={isDepositModalOpen}
         onClose={() => setIsDepositModalOpen(false)}
+      />
+      <WithdrawModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
       />
     </>
   );

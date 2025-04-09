@@ -88,6 +88,7 @@ export const DepositModal = ({ isOpen, onClose }: DepositModalProps) => {
             }
             className="w-full px-2 py-2 bg-primary/5 border border-primary/10 rounded-lg focus:outline-none focus:border-primary/20"
           >
+            <option value="">Select an asset</option>
             {userAssets.map((asset) => (
               <option key={asset.tokenAddress} value={asset.tokenAddress}>
                 {asset.symbol} ({asset.balance.toFixed(2)})
