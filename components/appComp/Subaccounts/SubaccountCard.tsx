@@ -17,7 +17,8 @@ export const SubaccountCard = ({ account }: SubaccountCardProps) => {
     account.spotPositions,
     account.perpPositions,
     account.settledPerpPnl,
-    account.totalDeposits
+    account.totalDeposits,
+    account.totalWithdraws
   );
 
   return (
