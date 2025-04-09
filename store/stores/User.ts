@@ -1,6 +1,7 @@
 import type { StateCreator } from "zustand";
 import { DriftClient, PublicKey, UserAccount } from "@drift-labs/sdk";
 import { toast } from "sonner";
+import { tokenService } from "@/service/tokens.service";
 
 export interface IUserStore {
   isUserAccountExists: boolean;
@@ -9,12 +10,14 @@ export interface IUserStore {
   subAccounts: UserAccount[];
   inputAddressAccounts: UserAccount[];
   isLoading: boolean;
+  userAssets: IUserAsset[];
 
   // actions
   getUserSubAccounts: (address: string) => Promise<void>;
   getInputAddressAccounts: (address: string) => Promise<void>;
   setDriftClient: (driftClient: DriftClient) => void;
   reset: () => void;
+  getUserAssets: (address: string) => Promise<void>;
 }
 
 const initialState = {
@@ -24,6 +27,7 @@ const initialState = {
   subAccounts: [],
   inputAddressAccounts: [],
   isLoading: false,
+  userAssets: [],
 };
 
 export const createUserStore: StateCreator<IUserStore, [], [], IUserStore> = (
@@ -43,8 +47,6 @@ export const createUserStore: StateCreator<IUserStore, [], [], IUserStore> = (
       const userAccounts = await driftClient.getUserAccountsForAuthority(
         new PublicKey(address)
       );
-
-      console.log("userAccounts", userAccounts);
 
       set({
         isUserAccountExists: userAccounts.length > 0,
@@ -89,5 +91,25 @@ export const createUserStore: StateCreator<IUserStore, [], [], IUserStore> = (
 
   reset: () => {
     set(initialState);
+  },
+
+  getUserAssets: async (address) => {
+    const { driftClient } = get();
+    if (!driftClient) {
+      toast.error("Drift client not initialized");
+      return;
+    }
+
+    try {
+      set({ isLoading: true });
+      const userAssets = await tokenService.getAllAssetWithMetadata(address);
+
+      set({ userAssets });
+    } catch (error) {
+      console.error("Failed to fetch user assets:", error);
+      toast.error("Failed to fetch user assets");
+    } finally {
+      set({ isLoading: false });
+    }
   },
 });

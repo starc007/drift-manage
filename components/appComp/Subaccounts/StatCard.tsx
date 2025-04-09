@@ -1,5 +1,3 @@
-import { StatCardProps } from "./types";
-
 export const StatCard = ({
   label,
   value,

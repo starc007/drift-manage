@@ -10,7 +10,7 @@ export const useDriftInitialize = (
 ) => {
   const [isInitializing, setIsInitializing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  const { getUserSubAccounts, setDriftClient } = useAppStore();
+  const { getUserSubAccounts, setDriftClient, getUserAssets } = useAppStore();
 
   useEffect(() => {
     const initializeDrift = async () => {
@@ -27,7 +27,10 @@ export const useDriftInitialize = (
 
         if (client) {
           setDriftClient(client);
-          await getUserSubAccounts(address);
+          await Promise.all([
+            getUserSubAccounts(address),
+            getUserAssets(address),
+          ]);
           setIsInitialized(true);
         }
       } catch (error) {

@@ -1,6 +1,5 @@
 import { formatBN } from "@/utils/format";
 import { StatCard } from "./StatCard";
-import { SubaccountCardProps } from "./types";
 import { MarginMode } from "@drift-labs/sdk";
 import { PerpPositions } from "./PerpPositions";
 import { useState } from "react";

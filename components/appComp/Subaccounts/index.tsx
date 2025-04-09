@@ -54,5 +54,3 @@ export const SubaccountsList = ({
     </div>
   );
 };
-
-export * from "./types";

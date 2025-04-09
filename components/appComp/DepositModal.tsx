@@ -11,9 +11,12 @@ interface DepositModalProps {
 export const DepositModal = ({ isOpen, onClose }: DepositModalProps) => {
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { subAccounts } = useAppStore();
+  const { subAccounts, userAssets } = useAppStore();
   const [selectedSubaccount, setSelectedSubaccount] = useState(
     subAccounts[0]?.subAccountId || 0
+  );
+  const [selectedAsset, setSelectedAsset] = useState<IUserAsset | null>(
+    userAssets.find((asset) => asset.symbol === "USDC") || null
   );
 
   const handleDeposit = async () => {
@@ -30,6 +33,30 @@ export const DepositModal = ({ isOpen, onClose }: DepositModalProps) => {
   return (
     <Modal isOpen={isOpen} close={onClose} title="Deposit USDC" showCloseButton>
       <div className="space-y-6 mt-4">
+        {/* Asset Selection */}
+        <div>
+          <label className="block text-sm font-medium text-primary/60 mb-2">
+            Select Asset
+          </label>
+          <select
+            value={selectedAsset?.tokenAddress || ""}
+            onChange={(e) =>
+              setSelectedAsset(
+                userAssets.find(
+                  (asset) => asset.tokenAddress === e.target.value
+                ) || null
+              )
+            }
+            className="w-full px-2 py-2 bg-primary/5 border border-primary/10 rounded-lg focus:outline-none focus:border-primary/20"
+          >
+            {userAssets.map((asset) => (
+              <option key={asset.tokenAddress} value={asset.tokenAddress}>
+                {asset.symbol} ({asset.balance.toFixed(2)})
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Subaccount Selection */}
         <div>
           <label className="block text-sm font-medium text-primary/60 mb-2">
@@ -42,7 +69,9 @@ export const DepositModal = ({ isOpen, onClose }: DepositModalProps) => {
           >
             {subAccounts.map((account) => (
               <option key={account.subAccountId} value={account.subAccountId}>
-                Subaccount #{account.subAccountId}
+                {account.name.length > 0
+                  ? String.fromCharCode(...account.name).trim()
+                  : `Subaccount ${account.subAccountId}`}
               </option>
             ))}
           </select>
@@ -51,7 +80,7 @@ export const DepositModal = ({ isOpen, onClose }: DepositModalProps) => {
         {/* Amount Input */}
         <div>
           <label className="block text-sm font-medium text-primary/60 mb-2">
-            Amount (USDC)
+            Amount ({selectedAsset?.symbol || "USDC"})
           </label>
           <div className="relative">
             <input
@@ -62,7 +91,9 @@ export const DepositModal = ({ isOpen, onClose }: DepositModalProps) => {
               className="w-full px-2 py-2 bg-primary/5 border border-primary/10 rounded-lg focus:outline-none focus:border-primary/20"
             />
             <button
-              onClick={() => setAmount("0")} // Will be replaced with max balance
+              onClick={() =>
+                selectedAsset && setAmount(selectedAsset.balance.toString())
+              }
               className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-primary/60 hover:text-primary"
             >
               MAX
@@ -73,7 +104,11 @@ export const DepositModal = ({ isOpen, onClose }: DepositModalProps) => {
         {/* Balance Display */}
         <div className="flex justify-between text-sm">
           <span className="text-primary/60">Available Balance</span>
-          <span className="font-medium">0.00 USDC</span>
+          <span className="font-medium">
+            {selectedAsset
+              ? `${selectedAsset.balance.toFixed(2)} ${selectedAsset.symbol}`
+              : "0.00 USDC"}
+          </span>
         </div>
 
         {/* Action Buttons */}
@@ -85,7 +120,9 @@ export const DepositModal = ({ isOpen, onClose }: DepositModalProps) => {
             variant="primary"
             className="flex-1"
             onClick={handleDeposit}
-            disabled={isLoading || !amount || Number(amount) <= 0}
+            disabled={
+              isLoading || !amount || Number(amount) <= 0 || !selectedAsset
+            }
           >
             {isLoading ? "Depositing..." : "Deposit"}
           </Button>
