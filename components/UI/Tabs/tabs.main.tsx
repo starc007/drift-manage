@@ -31,25 +31,16 @@ const TabItem = ({
       {isActive && (
         <motion.span
           layoutId={`bubble-tab-${id || ""}`}
-          className="absolute inset-0 z-0 gradient-dark gradient-dark-active rounded-lg overflow-hidden border border-primary/10"
+          className="absolute inset-0 z-0 bg-primary rounded-lg overflow-hidden border border-primary/10"
           transition={{ type: "spring", bounce: 0.2, duration: 0.8 }}
         />
       )}
       <span
         className={`relative z-10 flex items-center gap-1.5 ${
-          isActive ? "text-primary" : ""
+          isActive ? "text-background" : ""
         }`}
       >
         {title}
-        {count !== undefined && (
-          <span
-            className={`text-xs min-w-[20px] h-5 flex items-center justify-center px-1.5 rounded-full ${
-              isActive ? "bg-primary/20" : "bg-primary/10"
-            }`}
-          >
-            {count}
-          </span>
-        )}
       </span>
     </button>
   );
