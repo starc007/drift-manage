@@ -3,12 +3,10 @@ import { Modal } from "@/components/UI";
 import { Button } from "@/components/UI";
 import { useAppStore } from "@/store";
 import { toast } from "sonner";
-import {
-  QUOTE_PRECISION_EXP,
-  SpotBalanceType,
-  MainnetSpotMarkets,
-} from "@drift-labs/sdk";
+import { QUOTE_PRECISION_EXP } from "@drift-labs/sdk";
 import useWalletConnect from "@/hooks/useWalletConnect";
+import { calculateSubaccountValue } from "@/utils/calculations";
+import { BN } from "@drift-labs/sdk";
 
 interface WithdrawModalProps {
   isOpen: boolean;
@@ -30,41 +28,34 @@ export const WithdrawModal = ({ isOpen, onClose }: WithdrawModalProps) => {
     subAccounts[0]?.subAccountId || 0
   );
   const { address } = useWalletConnect();
-  const [selectedAsset, setSelectedAsset] = useState<IWithdrawAsset | null>(
-    null
-  );
 
-  // Get the selected subaccount's USDC balance
+  // Get the selected subaccount's net value
   const selectedAccount = subAccounts.find(
     (account) => account.subAccountId === selectedSubaccount
   );
 
-  // Get all non-zero spot positions
-  const availableSpotPositions =
-    selectedAccount?.spotPositions.filter((position) => {
-      const isDeposit =
-        position.balanceType.toString() === SpotBalanceType.DEPOSIT.toString();
-      const hasBalance = !position.scaledBalance.isZero();
-      return isDeposit && hasBalance;
-    }) || [];
+  const selectedAccountNetValue = selectedAccount
+    ? calculateSubaccountValue(
+        selectedAccount.spotPositions,
+        selectedAccount.perpPositions,
+        selectedAccount.settledPerpPnl,
+        selectedAccount.totalDeposits,
+        selectedAccount.totalWithdraws
+      )
+    : new BN(0);
 
-  // Calculate formatted balances for each position
-  const spotBalances = availableSpotPositions.map((position) => ({
-    marketIndex: position.marketIndex,
-    marketSymbol: MainnetSpotMarkets[position.marketIndex].symbol,
-    balance:
-      Number(position.scaledBalance.toString()) /
-      Math.pow(10, QUOTE_PRECISION_EXP),
-  }));
+  const formattedNetValue =
+    Number(selectedAccountNetValue.toString()) /
+    Math.pow(10, QUOTE_PRECISION_EXP);
 
   const handleWithdraw = async () => {
     try {
-      if (!driftClient || !selectedAsset) {
-        toast.error("Drift client not initialized or no asset selected");
+      if (!driftClient) {
+        toast.error("Drift client not initialized");
         return;
       }
       setIsLoading(true);
-      const marketIndex = selectedAsset.marketIndex;
+      const marketIndex = 0; // USDC market index
       await driftClient.subscribe();
       const precisionAmount = driftClient?.convertToSpotPrecision(
         marketIndex,
@@ -102,11 +93,11 @@ export const WithdrawModal = ({ isOpen, onClose }: WithdrawModalProps) => {
     <Modal
       isOpen={isOpen}
       close={onClose}
-      title="Withdraw Assets"
+      title="Withdraw USDC"
       showCloseButton
     >
       <p className="text-sm text-yellow-500 text-center mt-3">
-        Withdraw your available spot market assets
+        Withdraw USDC from your subaccount
       </p>
       <div className="space-y-6 mt-4">
         {/* Subaccount Selection */}
@@ -129,41 +120,10 @@ export const WithdrawModal = ({ isOpen, onClose }: WithdrawModalProps) => {
           </select>
         </div>
 
-        {/* Asset Selection */}
-        <div>
-          <label className="block text-sm font-medium text-primary/60 mb-2">
-            Select Asset
-          </label>
-          <select
-            value={selectedAsset?.marketIndex || ""}
-            onChange={(e) => {
-              const marketIndex = Number(e.target.value);
-              const position = spotBalances.find(
-                (p) => p.marketIndex === marketIndex
-              );
-              if (position) {
-                setSelectedAsset({
-                  marketIndex: position.marketIndex,
-                  marketSymbol: position.marketSymbol,
-                  balance: position.balance,
-                });
-              }
-            }}
-            className="w-full px-2 py-2 bg-primary/5 border border-primary/10 rounded-lg focus:outline-none focus:border-primary/20"
-          >
-            <option value="">Select an asset</option>
-            {spotBalances.map((position) => (
-              <option key={position.marketIndex} value={position.marketIndex}>
-                {position.marketSymbol} ({position.balance.toFixed(2)})
-              </option>
-            ))}
-          </select>
-        </div>
-
         {/* Amount Input */}
         <div>
           <label className="block text-sm font-medium text-primary/60 mb-2">
-            Amount
+            Amount (USDC)
           </label>
           <div className="relative">
             <input
@@ -174,9 +134,7 @@ export const WithdrawModal = ({ isOpen, onClose }: WithdrawModalProps) => {
               className="w-full px-2 py-2 bg-primary/5 border border-primary/10 rounded-lg focus:outline-none focus:border-primary/20"
             />
             <button
-              onClick={() =>
-                selectedAsset && setAmount(selectedAsset.balance.toString())
-              }
+              onClick={() => setAmount(formattedNetValue.toString())}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-primary/60 hover:text-primary"
             >
               MAX
@@ -187,12 +145,14 @@ export const WithdrawModal = ({ isOpen, onClose }: WithdrawModalProps) => {
         {/* Balance Display */}
         <div className="flex justify-between text-sm">
           <span className="text-primary/60">Available Balance</span>
-          <span className="font-medium">
-            {selectedAsset
-              ? `${selectedAsset.balance.toFixed(2)} (${
-                  selectedAsset.marketSymbol
-                })`
-              : "0.00"}
+          <span
+            className={`font-medium ${
+              selectedAccountNetValue.isNeg()
+                ? "text-red-400"
+                : "text-green-400"
+            }`}
+          >
+            ${formattedNetValue.toFixed(2)}
           </span>
         </div>
 
@@ -208,9 +168,8 @@ export const WithdrawModal = ({ isOpen, onClose }: WithdrawModalProps) => {
             disabled={
               isLoading ||
               !amount ||
-              !selectedAsset ||
               Number(amount) <= 0 ||
-              Number(amount) > (selectedAsset?.balance || 0)
+              Number(amount) > formattedNetValue
             }
           >
             {isLoading ? "Withdrawing..." : "Withdraw"}

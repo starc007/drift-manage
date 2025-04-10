@@ -4,6 +4,9 @@ import { Button } from "@/components/UI";
 import { useState } from "react";
 import { DepositModal } from "../DepositModal";
 import { WithdrawModal } from "../WithdrawModal";
+import { PerpOrderModal } from "../PerpOrderModal";
+import { FaArrowUp, FaArrowDown, FaChartLine } from "react-icons/fa6";
+
 interface Props {
   accounts: UserAccount[];
 }
@@ -11,6 +14,8 @@ interface Props {
 export const TotalValue = ({ accounts }: Props) => {
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [isPerpOrderModalOpen, setIsPerpOrderModalOpen] = useState(false);
+
   const totalValue = accounts.reduce((acc, account) => {
     const accountValue = calculateSubaccountValue(
       account.spotPositions,
@@ -43,14 +48,28 @@ export const TotalValue = ({ accounts }: Props) => {
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-3">
-          <Button variant="primary" onClick={() => setIsDepositModalOpen(true)}>
+          <Button
+            variant="primary"
+            onClick={() => setIsDepositModalOpen(true)}
+            className="flex items-center gap-2"
+            lefticon={<FaArrowUp className="w-4 h-4" />}
+          >
             Deposit
           </Button>
           <Button
             variant="secondary"
             onClick={() => setIsWithdrawModalOpen(true)}
+            className="flex items-center gap-2"
+            lefticon={<FaArrowDown className="w-4 h-4" />}
           >
             Withdraw
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => setIsPerpOrderModalOpen(true)}
+            lefticon={<FaChartLine className="w-4 h-4" />}
+          >
+            Place Perp Order
           </Button>
         </div>
       </div>
@@ -61,6 +80,10 @@ export const TotalValue = ({ accounts }: Props) => {
       <WithdrawModal
         isOpen={isWithdrawModalOpen}
         onClose={() => setIsWithdrawModalOpen(false)}
+      />
+      <PerpOrderModal
+        isOpen={isPerpOrderModalOpen}
+        onClose={() => setIsPerpOrderModalOpen(false)}
       />
     </>
   );

@@ -59,6 +59,7 @@ export const DepositModal = ({ isOpen, onClose }: DepositModalProps) => {
         getUserSubAccounts(address!),
       ]);
       toast.success("Deposit successful");
+      onClose();
     } catch (error) {
       console.error("Deposit failed:", error);
     } finally {
