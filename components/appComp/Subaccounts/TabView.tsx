@@ -6,6 +6,7 @@ import { SubaccountsList } from "./index";
 import useWalletConnect from "@/hooks/useWalletConnect";
 import { NotConnectedState } from "./NotConnectedState";
 import { Tabs } from "@/components/UI";
+import { motion } from "framer-motion";
 
 type Tab = "my-accounts" | "other-wallet";
 
@@ -52,14 +53,21 @@ export const TabView = () => {
       </div>
 
       {/* Tab Content */}
-      {activeTab === "my-accounts" ? (
-        <SubaccountsList isWalletInput={false} />
-      ) : (
-        <div>
-          <WalletInput />
-          <SubaccountsList isWalletInput={true} />
-        </div>
-      )}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+        key={activeTab}
+      >
+        {activeTab === "my-accounts" ? (
+          <SubaccountsList isWalletInput={false} />
+        ) : (
+          <div>
+            <WalletInput />
+            <SubaccountsList isWalletInput={true} />
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 };
